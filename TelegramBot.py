@@ -148,6 +148,9 @@ dispatcher.add_handler(reset_handler)
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
+stop_handler = CommandHandler('stop', stop)
+dispatcher.add_handler(stop_handler)
+
 echo_handler = MessageHandler(Filters.text, echo)
 dispatcher.add_handler(echo_handler)
 
