@@ -75,7 +75,7 @@ def reset(update, context):
         context.user_data.clear()
 
 def stop(update, context):
-        context.job_queue.schedule_removal()
+        context.job_queue.stop()
         context.bot.send_message(chat_id=update.message.chat_id, 
                 text="😢 Ви більше не будете отримувати щоденний дайджест")
     
