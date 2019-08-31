@@ -42,6 +42,7 @@ def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext)
 
 
 
+
 def categories_handler(update, context):
     if update.message.text in tags:
         context.user_data['categories'].add(update.message.text)
@@ -75,9 +76,8 @@ def reset(update, context):
         context.user_data.clear()
 
 def stop(update, context):
-        context.job_queue.stop()
-        context.bot.send_message(chat_id=update.message.chat_id, 
-                text="😢 Ви більше не будете отримувати щоденний дайджест")
+    pass
+
     
 
 def echo(update, context):
@@ -114,7 +114,7 @@ def echo(update, context):
     if update.message.text =='🔧 Мої налаштування':
         if len(context.user_data['categories'])>0 and context.user_data.get('time') is not None:
             context.bot.send_message(chat_id=update.message.chat_id, 
-                text="<b>Ви підписані на категорії:</b>\n✅ {}. \n⌚ Час отримання дайджесту: {}. \n• Змінити налаштування /reset\n 🚫 <b>Припинити отримання щоденного дайджесту:</b> /stop".format(',\n✅ '.join(context.user_data['categories']),context.user_data['time']),
+                text="<b>Ви підписані на категорії:</b>\n✅ {}. \n⌚ Час отримання дайджесту: {}. \n• Змінити налаштування /reset\n".format(',\n✅ '.join(context.user_data['categories']),context.user_data['time']),
                 parse_mode=telegram.ParseMode.HTML)
         else:
             context.bot.send_message(chat_id=update.message.chat_id, 
@@ -148,8 +148,6 @@ dispatcher.add_handler(reset_handler)
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
-stop_handler = CommandHandler('stop', stop)
-dispatcher.add_handler(stop_handler)
 
 echo_handler = MessageHandler(Filters.text, echo)
 dispatcher.add_handler(echo_handler)
