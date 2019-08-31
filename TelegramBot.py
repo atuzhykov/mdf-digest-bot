@@ -1,7 +1,6 @@
 from config import TELEGRAM_BOT_TOKEN, tags, times, main_menu
 import logging
 import telegram
-import time
 import schedule
 from feedHandler import get_timed_digest, get_immediately_digest
 from telegram.ext import Updater
@@ -33,7 +32,9 @@ def timed_digest_sender(context: telegram.ext.CallbackContext):
 
 def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext):
     setted_time = context.user_data['time']
-    context.job_queue.run_daily(timed_digest_sender, time = time(int(setted_time[:2]), int(setted_time[3:])) , context=[update.message.chat_id,context.user_data])
+    daily_time = time(int(setted_time[:2]), int(setted_time[3:]))
+    print(daily_time)
+    context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
     context.bot.send_message(chat_id=update.message.chat_id, 
                 text="🙌 Ви щойно підписались на отримання щоденного дайджесту!")
 
