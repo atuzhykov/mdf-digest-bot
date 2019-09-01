@@ -25,16 +25,13 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 def timed_digest_sender(context: telegram.ext.CallbackContext):
     chat_id = context.job.context[0]
     user_data = context.job.context[1]
-    print(chat_id, user_data)
     digest = get_timed_digest(user_data['categories'], user_data['time'])
-    context.bot.send_message(chat_id=chat_id, text=" NewsStarted")
     for item in digest:
        context.bot.send_message(chat_id=chat_id, text="{}\n{}".format(item['title'],item['link']))
 
 def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext):
     setted_time = context.user_data['time']
     daily_time = time(int(setted_time[:2]), int(setted_time[3:]))
-    print(daily_time)
     context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
     context.bot.send_message(chat_id=update.message.chat_id, 
                 text="🙌 Ви щойно підписались на отримання щоденного дайджесту!")
@@ -73,7 +70,6 @@ def start(update, context):
                  text="Привіт, <b>{}</b>!\nЯ <i>дайджест-бот</i> 6262.com.ua! \n• Обери категорії новин, які тебе цікавлять та час, коли хочеш їх отримувати! \n• Щоб змінити налаштування використай команду /reset".format(user), 
                  parse_mode=telegram.ParseMode.HTML,
                  reply_markup=reply_markup)
-    print(context.user_data)
 
 
 def stop(update, context):
@@ -127,7 +123,6 @@ def echo(update, context):
     if update.message.text in times and update.message.text!= '◀ Назад':
         time_handler(update, context)
 
-    print(context.user_data)
 
  
 reset_handler  = CommandHandler('reset', start)
