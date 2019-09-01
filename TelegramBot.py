@@ -27,6 +27,7 @@ def timed_digest_sender(context: telegram.ext.CallbackContext):
     user_data = context.job.context[1]
     print(chat_id, user_data)
     digest = get_timed_digest(user_data['categories'], user_data['time'])
+    context.bot.send_message(chat_id=chat_id, text=" NewsStarted")
     for item in digest:
        context.bot.send_message(chat_id=chat_id, text="{}\n{}".format(item['title'],item['link']))
 
