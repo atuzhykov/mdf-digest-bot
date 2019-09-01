@@ -32,7 +32,8 @@ def timed_digest_sender(context: telegram.ext.CallbackContext):
 def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext):
     setted_time = context.user_data['time']
     daily_time = time(int(setted_time[:2]), int(setted_time[3:]))
-    context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
+    # context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
+    context.job_queue.run_repeating(timed_digest_sender, interval = 1000, context=[update.message.chat_id,context.user_data])
     context.bot.send_message(chat_id=update.message.chat_id, 
                 text="🙌 Ви щойно підписались на отримання щоденного дайджесту!")
 
