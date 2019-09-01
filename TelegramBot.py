@@ -31,10 +31,8 @@ def timed_digest_sender(context: telegram.ext.CallbackContext):
 
 def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext):
     setted_time = context.user_data['time']
-    # daily_time = time(int(setted_time[:2]), int(setted_time[3:]))
-    daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
-    print(daily_time)
-    # 86400
+    daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=gettz("Europe/Madrid"))
+    # run daily doesnt work on host, but work on local; idk why, so I setted run_repeating work as run_daily
     # context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
     context.job_queue.run_repeating(timed_digest_sender, interval =  10 ,first = daily_time ,context=[update.message.chat_id,context.user_data])
     context.bot.send_message(chat_id=update.message.chat_id, 
