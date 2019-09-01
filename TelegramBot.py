@@ -31,7 +31,7 @@ def timed_digest_sender(context: telegram.ext.CallbackContext):
 
 def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext):
     setted_time = context.user_data['time']
-    daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=gettz("Europe/Madrid"))
+    daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
     # run daily doesnt work on host, but work on local; idk why, so I setted run_repeating work as run_daily
     # context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
     context.job_queue.run_repeating(timed_digest_sender, interval =  10 ,first = daily_time ,context=[update.message.chat_id,context.user_data])
@@ -103,11 +103,15 @@ def echo(update, context):
 
 
     if update.message.text =='🕓 Налаштувати час':
-        custom_keyboard = divide_chunks(times, 2)
-        reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
-        context.bot.send_message(chat_id=update.message.chat_id, 
+        if len(context.user_data['categories'])>0:
+            custom_keyboard = divide_chunks(times, 2)
+            reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+            context.bot.send_message(chat_id=update.message.chat_id, 
                  text="Оберіть час отримання дайджесту", 
                  reply_markup=reply_markup)
+        else:
+            context.bot.send_message(chat_id=update.message.chat_id, 
+                text="⚠\nСпершу оберіть категорії")
     
 
     if update.message.text =='🔧 Мої налаштування':
@@ -124,6 +128,8 @@ def echo(update, context):
 
     if update.message.text in times and update.message.text!= '◀ Назад':
         time_handler(update, context)
+    
+    print(context.user_data)
 
 
  
