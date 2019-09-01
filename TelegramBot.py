@@ -5,12 +5,11 @@ import schedule
 from feedHandler import get_timed_digest, get_immediately_digest
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler, Filters, PicklePersistence
+from telegram.ext import MessageHandler, Filters
 from utils import divide_chunks
 from datetime import time
 
-my_persistence = PicklePersistence(filename='bot_persistence.pickle')
-updater = Updater(token=TELEGRAM_BOT_TOKEN, persistence=my_persistence,use_context=True)
+updater = Updater(token=TELEGRAM_BOT_TOKEN,use_context=True)
 j = updater.job_queue
 
 dispatcher = updater.dispatcher
