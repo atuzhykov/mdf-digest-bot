@@ -63,7 +63,7 @@ def time_handler(update, context):
 
 
 def start(update, context):
-
+    context.user_data.clear()
     context.user_data['categories']= set()
     user = update.message.from_user.first_name
     reply_markup = telegram.ReplyKeyboardMarkup(main_menu)
@@ -71,9 +71,6 @@ def start(update, context):
                  text="Привіт, <b>{}</b>!\nЯ <i>дайджест-бот</i> 6262.com.ua! \n• Обери категорії новин, які тебе цікавлять та час, коли хочеш їх отримувати! \n• Щоб змінити налаштування використай команду /reset".format(user), 
                  parse_mode=telegram.ParseMode.HTML,
                  reply_markup=reply_markup)
-
-def reset(update, context):
-        context.user_data.clear()
 
 def stop(update, context):
     pass
@@ -128,19 +125,7 @@ def echo(update, context):
 
     print(context.user_data)
 
-
-    
-
-
-
-    
-    #     context.user_data['categories'].add(update.message.text)
-    #     context.bot.send_message(chat_id=update.message.chat_id, 
-    #         text="Ви підписалися на категорії:\n✅ {}. \n⌚ Введіть час, коли ви хочете отримувати дайджест щодня у форматі HH:MM, наприклад 08:30 або 21:00 та натисніть Завершити".format(',\n✅ '.join(context.user_data['categories'])))
-    
-  
-
-
+ 
 reset_handler  = CommandHandler('reset', start)
 dispatcher.add_handler(reset_handler)
 
