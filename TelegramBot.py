@@ -5,11 +5,12 @@ import schedule
 from feedHandler import get_timed_digest, get_immediately_digest
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler, Filters
+from telegram.ext import MessageHandler, Filters, PicklePersistence
 from utils import divide_chunks
 from datetime import time, datetime
 
-updater = Updater(token=TELEGRAM_BOT_TOKEN,use_context=True)
+my_persistence = PicklePersistence(filename='BotData')
+updater = Updater(token=TELEGRAM_BOT_TOKEN,persistence=my_persistence,use_context=True)
 j = updater.job_queue
 
 dispatcher = updater.dispatcher
@@ -31,10 +32,10 @@ def timed_digest_sender(context: telegram.ext.CallbackContext):
 
 def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext):
     setted_time = context.user_data['time']
-    daily_time = time(hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
-    context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
-    # daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
-    # context.job_queue.run_repeating(timed_digest_sender, interval =  86400 ,first = daily_time ,context=[update.message.chat_id,context.user_data])
+    # daily_time = time(hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
+    # context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
+    daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
+    context.job_queue.run_repeating(timed_digest_sender, interval =  86400 ,first = daily_time ,context=[update.message.chat_id,context.user_data])
     context.bot.send_message(chat_id=update.message.chat_id, 
                 text="🙌 Ви щойно підписались на отримання щоденного дайджесту!")
 
