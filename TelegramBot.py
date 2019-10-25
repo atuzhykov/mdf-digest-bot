@@ -6,7 +6,7 @@ from feedHandler import get_timed_digest, get_immediately_digest
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters, PicklePersistence
-from utils import divide_chunks
+from utils import save_and_update_data, divide_chunks, show_statistics
 from datetime import time, datetime
 
 my_persistence = PicklePersistence(filename='BotData')
@@ -32,12 +32,13 @@ def timed_digest_sender(context: telegram.ext.CallbackContext):
 
 def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext):
     setted_time = context.user_data['time']
-    # daily_time = time(hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
-    # context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
-    daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
-    context.job_queue.run_repeating(timed_digest_sender, interval =  86400 ,first = daily_time ,context=[update.message.chat_id,context.user_data])
+    daily_time = time(hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
+    context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
+    # daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
+    # context.job_queue.run_repeating(timed_digest_sender, interval =  86400 ,first = daily_time ,context=[update.message.chat_id,context.user_data])
     context.bot.send_message(chat_id=update.message.chat_id, 
                 text="🙌 Ви щойно підписались на отримання щоденного дайджесту!")
+    save_and_update_data(context.user_data)
 
 
 
@@ -79,6 +80,13 @@ def stop(update, context):
     pass
 
     
+def statistics(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, 
+                text=show_statistics())
+
+
+
+
 
 def echo(update, context):
     if update.message.text == '📆 Отримати миттєві новини за добу':
@@ -147,6 +155,9 @@ dispatcher.add_handler(echo_handler)
 
 timer_handler = CommandHandler('launch', digest_timer)
 dispatcher.add_handler(timer_handler)
+
+stats_handler = CommandHandler('statistics', statistics)
+dispatcher.add_handler(stats_handler)
 
 
 updater.start_polling()
