@@ -3,10 +3,11 @@ from config import RSS_URL
 from datetime import datetime,timedelta
 from dateutil import parser
 
-feed = feedparser.parse(RSS_URL)
 
 
 def get_timed_digest(categories,time):
+    feed = feedparser.parse(RSS_URL)
+
     now = datetime.now()
     one_day_ago = datetime(now.year, now.month, now.day, int(time[:2]), int(time[3:]))- timedelta(days=1)
     digest = []
@@ -20,6 +21,8 @@ def get_timed_digest(categories,time):
     return digest
 
 def get_immediately_digest():
+    feed = feedparser.parse(RSS_URL)
+
     now = datetime.now()
     one_day_ago = datetime(now.year, now.month, now.day, now.hour, now.minute)- timedelta(days=1)
     digest = []

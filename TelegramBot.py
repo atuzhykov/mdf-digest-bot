@@ -6,7 +6,7 @@ from feedHandler import get_timed_digest, get_immediately_digest
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters, PicklePersistence
-from utils import save_and_update_data, divide_chunks, show_statistics
+from utils import save_and_update_data, divide_chunks, show_statistics, save_intercations,load_interaction, getuserdata
 from datetime import time, datetime
 
 my_persistence = PicklePersistence(filename='BotData')
@@ -19,6 +19,16 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                      level=logging.INFO)
 
 
+
+def send_later():
+    try:
+        data = load_interaction()
+        for id, bot in data.items():
+            bot.send_message(id, text='⚠️\nСталась прикра помилка, і через системний збій я зовсім забув всі Ваші налаштування дайджесту.\n•Скористайтеся командою /reset, щоб нагадати мені ваші вподобання!')
+    except Exception:
+        pass
+
+send_later()
 
 
 
@@ -38,7 +48,14 @@ def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext)
     # context.job_queue.run_repeating(timed_digest_sender, interval =  86400 ,first = daily_time ,context=[update.message.chat_id,context.user_data])
     context.bot.send_message(chat_id=update.message.chat_id, 
                 text="🙌 Ви щойно підписались на отримання щоденного дайджесту!")
+    context.user_data['chat_id'] = update.message.chat_id
     save_and_update_data(context.user_data)
+    try:
+        mybots=load_interaction()
+    except Exception:
+        mybots = {}
+    mybots[update.message.chat_id] = context.bot
+    save_intercations(mybots)
 
 
 

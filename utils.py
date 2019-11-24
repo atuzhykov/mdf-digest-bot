@@ -16,6 +16,11 @@ def get_all_tags(RSS_URL):
 import json
 from collections import Counter
 
+def getuserdata():
+    with open('data.json') as json_file:
+        data = json.load(json_file)
+    return data
+
 def save_and_update_data(userdata:dict):
     try:
         with open('data.json') as f:
@@ -68,3 +73,18 @@ def show_statistics():
 
     return """Кількість підписок: {}\n\nПідписка на категорії у розрізі популярності:\n{}\nБажаний час дайджесту:\n{}""".format(users_count, categories_str, times_str)
 
+import pickle
+
+def save_intercations(data):
+    try:
+        import cPickle as pickle
+    except ImportError:  # python 3.x
+        import pickle
+
+    with open('data.p', 'wb') as fp:
+        pickle.dump(data, fp)
+
+def load_interaction():
+    with open('data.p', 'rb') as fp:
+        data = pickle.load(fp)
+    return data
