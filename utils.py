@@ -88,3 +88,4 @@ def load_interaction():
     with open('data.p', 'rb') as fp:
         data = pickle.load(fp)
     return data
+

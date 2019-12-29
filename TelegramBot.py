@@ -7,10 +7,10 @@ from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters, PicklePersistence
 from utils import save_and_update_data, divide_chunks, show_statistics, save_intercations,load_interaction, getuserdata
-from datetime import time, datetime
-
-my_persistence = PicklePersistence(filename='BotData')
-updater = Updater(token=TELEGRAM_BOT_TOKEN,persistence=my_persistence,use_context=True)
+from datetime import time, datetime, timedelta
+import os
+from db_handler import save_to_db, load_from_db,load_from_db_by_chat_id, update_by, statistics
+updater = Updater(token=TELEGRAM_BOT_TOKEN, use_context=True)
 j = updater.job_queue
 
 dispatcher = updater.dispatcher
@@ -20,15 +20,32 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 
+
+def timed_digest(context):
+    chat_id = context.job.context[0]
+    categories = context.job.context[1]
+    categories = categories.strip('{ }').replace('"', '').replace(' ', '').split(',')
+    daily_time = context.job.context[2]
+    digest = get_timed_digest(categories, daily_time)
+    bot = telegram.Bot(token=TELEGRAM_BOT_TOKEN)
+    for item in digest:
+       bot.send_message(chat_id=chat_id, text="{}\n{}".format(item['title'],item['link']))
+
+    
 def send_later():
-    try:
-        data = load_interaction()
-        for id, bot in data.items():
-            bot.send_message(id, text='⚠️\nСталась прикра помилка, і через системний збій я зовсім забув всі Ваші налаштування дайджесту.\n•Скористайтеся командою /reset, щоб нагадати мені ваші вподобання!')
-    except Exception:
-        pass
+    
+    data = load_from_db()
+    for chat_id, user_name, categories, daily_time in data:
+        j.run_daily(timed_digest,  time = time(hour=int(daily_time[:2]), minute=int(daily_time[3:]),  tzinfo=None), context = [chat_id, categories, daily_time] )
 
 send_later()
+
+
+
+
+
+
+
 
 
 
@@ -44,18 +61,13 @@ def digest_timer(update: telegram.Update, context: telegram.ext.CallbackContext)
     setted_time = context.user_data['time']
     daily_time = time(hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
     context.job_queue.run_daily(timed_digest_sender, time = daily_time, context=[update.message.chat_id,context.user_data])
-    # daily_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour=int(setted_time[:2]), minute=int(setted_time[3:]),  tzinfo=None)
-    # context.job_queue.run_repeating(timed_digest_sender, interval =  86400 ,first = daily_time ,context=[update.message.chat_id,context.user_data])
     context.bot.send_message(chat_id=update.message.chat_id, 
                 text="🙌 Ви щойно підписались на отримання щоденного дайджесту!")
-    context.user_data['chat_id'] = update.message.chat_id
-    save_and_update_data(context.user_data)
-    try:
-        mybots=load_interaction()
-    except Exception:
-        mybots = {}
-    mybots[update.message.chat_id] = context.bot
-    save_intercations(mybots)
+    
+    if load_from_db_by_chat_id(update.message.chat_id):
+        update_by(update.message.chat_id, str(context.user_data['categories']),context.user_data['time'])
+    else:
+        save_to_db(update.message.chat_id,update.message.from_user.first_name,str(context.user_data['categories']),context.user_data['time'])
 
 
 
@@ -99,7 +111,7 @@ def stop(update, context):
     
 def statistics(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, 
-                text=show_statistics())
+                text=statistics())
 
 
 
@@ -141,10 +153,19 @@ def echo(update, context):
     
 
     if update.message.text =='🔧 Мої налаштування':
+
         if context.user_data and len(context.user_data['categories'])>0 and context.user_data.get('time') is not None:
             context.bot.send_message(chat_id=update.message.chat_id, 
                 text="<b>Ви підписані на категорії:</b>\n✅ {}. \n⌚ Час отримання дайджесту: {}. \n• Змінити налаштування /reset\n".format(',\n✅ '.join(context.user_data['categories']),context.user_data['time']),
                 parse_mode=telegram.ParseMode.HTML)
+        elif load_from_db_by_chat_id(chat_id=update.message.chat_id):
+            user_data = {}
+            user_data['categories'] = load_from_db_by_chat_id(chat_id=update.message.chat_id)[0][2].strip('{ }').replace('"', '').replace(' ', '').split(',')
+            user_data['time'] = load_from_db_by_chat_id(chat_id=update.message.chat_id)[0][3]
+            context.bot.send_message(chat_id=update.message.chat_id, 
+                text="<b>Ви підписані на категорії:</b>\n✅ {}. \n⌚ Час отримання дайджесту: {}. \n• Змінити налаштування /reset\n".format(',\n✅ '.join(user_data['categories']),user_data['time']),
+                parse_mode=telegram.ParseMode.HTML)
+           
         else:
             context.bot.send_message(chat_id=update.message.chat_id, 
                 text="⚠\nВи ще не налаштували дайджест")
@@ -155,7 +176,6 @@ def echo(update, context):
     if update.message.text in times and update.message.text!= '◀ Назад':
         time_handler(update, context)
     
-    print(context.user_data)
 
 
  
