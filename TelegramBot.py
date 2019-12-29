@@ -1,7 +1,6 @@
 from config import TELEGRAM_BOT_TOKEN, tags, times, main_menu
 import logging
 import telegram
-import schedule
 from feedHandler import get_timed_digest, get_immediately_digest
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
